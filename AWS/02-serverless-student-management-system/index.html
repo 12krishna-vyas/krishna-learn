@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AWS Student Management System</title>
+</head>
+<body>
 
+<h1>AWS Student Management System</h1>
+
+<h2>Add Student</h2>
+
+<input id="name" placeholder="Student Name">
+<input id="course" placeholder="Course">
+
+<button onclick="addStudent()">Save</button>
+
+<h2>Students</h2>
+
+<button onclick="loadStudents()">Refresh</button>
+
+<pre id="output"></pre>
+
+<script>
+
+const API_URL = "YOUR_LAMBDA_FUNCTION_URL";
+
+async function addStudent() {
+
+  const name = document.getElementById("name").value;
+  const course = document.getElementById("course").value;
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name,
+      course
+    })
+  });
+
+  await response.json();
+  loadStudents();
+}
+
+async function loadStudents() {
+
+  const response = await fetch(API_URL);
+  const data = await response.json();
+
+  document.getElementById("output").textContent =
+    JSON.stringify(data, null, 2);
+}
+
+loadStudents();
+
+</script>
+
+</body>
+</html>
