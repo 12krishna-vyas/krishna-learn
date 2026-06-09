@@ -1,1 +1,13 @@
-
+User
+  |
+  v
+S3 Static Website
+  |
+  v
+Lambda Function URL
+  |
+  v
+AWS Lambda
+  |
+  v
+DynamoDB
