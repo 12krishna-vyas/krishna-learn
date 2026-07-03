@@ -1,4 +1,4 @@
-# 🚀 **Serverless Face Recognition System using AWS**
+#  **Serverless Face Recognition System using AWS**
 
 A serverless face recognition application built using **Amazon EC2, Amazon S3, AWS Lambda, Amazon Rekognition, Amazon DynamoDB, IAM, Flask, Python, HTML, and CSS**.
 
@@ -6,13 +6,7 @@ The application allows users to upload their name and image through a web interf
 
 ---
 
-## 🏗️ Architecture
-
-![Architecture](images/architecture.png)
-
----
-
-## 📌 Features
+##  Features
 
 - Web application hosted on Amazon EC2
 - Upload name and image using a Flask-based frontend
@@ -24,7 +18,7 @@ The application allows users to upload their name and image through a web interf
 
 ---
 
-## ⚙️ AWS Services Used
+##  AWS Services Used
 
 - Amazon EC2
 - Amazon S3
@@ -32,21 +26,36 @@ The application allows users to upload their name and image through a web interf
 - Amazon Rekognition
 - Amazon DynamoDB
 - AWS IAM
-- Amazon CloudWatch
 
 ---
 
-## 💻 Technologies Used
+##  Project Workflow
 
-- Python
-- Flask
-- Boto3
-- HTML
-- CSS
-
----
-
-## 🔄 Project Workflow
+User
+   │
+   ▼
+Flask Web Application (EC2)
+   │
+   ▼
+Amazon S3 (face-upload123)
+   │
+   ▼
+S3 ObjectCreated Event
+   │
+   ▼
+AWS Lambda
+   │
+   ▼
+Amazon Rekognition Collection
+   │
+   ▼
+Compare with Known Faces
+   │
+   ▼
+Match Found
+   │
+   ▼
+Amazon DynamoDB (FaceMetadata)
 
 1. The user enters their **name** and uploads an image through the web application hosted on Amazon EC2.
 2. The Flask backend uploads the image to the **face-upload123** S3 bucket.
@@ -57,54 +66,7 @@ The application allows users to upload their name and image through a web interf
 
 ---
 
-## 📸 Project Screenshots
-
-### Web Application
-
-![Web App](images/webapp.png)
-
-### Amazon S3 Buckets
-
-![S3 Buckets](images/s3-buckets.png)
-
-### AWS Lambda
-
-![Lambda](images/lambda.png)
-
-### Amazon Rekognition
-
-![Rekognition](images/rekognition.png)
-
-### Amazon DynamoDB
-
-![DynamoDB](images/dynamodb.png)
-
----
-
-## 🚀 Getting Started
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/your-username/aws-serverless-face-recognition.git
-cd aws-serverless-face-recognition
-```
-
-### Install Dependencies
-
-```bash
-pip install flask boto3
-```
-
-### Run the Application
-
-```bash
-python app.py
-```
-
----
-
-## 📚 Learning Outcomes
+## Learning Outcomes
 
 - Event-driven architecture on AWS
 - Amazon S3 Event Notifications
@@ -117,8 +79,9 @@ python app.py
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Krishna Vyas**
 
 If you found this project useful, feel free to ⭐ this repository and connect with me on LinkedIn.
+https://www.linkedin.com/posts/krishna-vyas-b80183240_aws-amazonwebservices-cloudcomputing-ugcPost-7478668755531759616-b_cI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAADvTbtABCfCXWoDoz470UMjzlL1TEx48AgE
