@@ -1,0 +1,89 @@
+"""
+Flask app for EC2.
+Serves a simple upload form and pushes uploaded images straight to Bucket 1
+via boto3 (server-side upload — the file goes: browser -> EC2 -> S3).
+
+Setup on the EC2 instance:
+    pip install flask boto3
+    python app.py
+
+The EC2 instance needs an IAM ROLE attached (not hardcoded keys) with
+s3:PutObject permission on bucket1. Attach it via EC2 console:
+    EC2 -> Instance -> Actions -> Security -> Modify IAM role
+"""
+
+import os
+import uuid
+from datetime import datetime
+
+import boto3
+from flask import Flask, request, render_template_string, redirect, url_for, flash
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-change-me")
+
+BUCKET1_NAME = os.environ.get("BUCKET1_NAME", "face-upload123")
+REGION = os.environ.get("AWS_REGION", "ap-south-1")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+s3 = boto3.client("s3", region_name=REGION)
+
+UPLOAD_FORM = """
+<!doctype html>
+<title>Face Match Upload</title>
+<h2>Upload an image</h2>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul style="color:green;">
+    {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+<form method=post enctype=multipart/form-data>
+  <input type=file name=file accept="image/*" required>
+  <input type=submit value=Upload>
+</form>
+"""
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route("/", methods=["GET", "POST"])
+def upload():
+    if request.method == "POST":
+        file = request.files.get("file")
+
+        if not file or file.filename == "":
+            flash("No file selected.")
+            return redirect(url_for("upload"))
+
+        if not allowed_file(file.filename):
+            flash("Only .png, .jpg, .jpeg files are allowed.")
+            return redirect(url_for("upload"))
+
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        key = f"uploads/{timestamp}_{uuid.uuid4().hex[:8]}.{ext}"
+
+        try:
+            s3.upload_fileobj(
+                file,
+                BUCKET1_NAME,
+                key,
+                ExtraArgs={"ContentType": file.content_type},
+            )
+            flash(f"Uploaded successfully as '{key}'. Checking for a match now — "
+                  f"result will appear in DynamoDB shortly if matched.")
+        except Exception as e:
+            flash(f"Upload failed: {e}")
+
+        return redirect(url_for("upload"))
+
+    return render_template_string(UPLOAD_FORM)
+
+
+if __name__ == "__main__":
+    # In production, run behind gunicorn + nginx instead of the dev server.
+    app.run(host="0.0.0.0", port=5000, debug=False)
