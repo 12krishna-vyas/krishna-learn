@@ -1,0 +1,63 @@
+"""
+Lambda function.
+Trigger: S3 Bucket 1 -> Lambda directly (S3 Event Notification, no SNS)
+"""
+
+import os
+import datetime
+import urllib.parse
+import boto3
+
+s3 = boto3.client("s3")
+rekognition = boto3.client("rekognition")
+dynamodb = boto3.resource("dynamodb")
+
+COLLECTION_ID = os.environ.get("COLLECTION_ID", "bucket2-collection")
+TABLE_NAME = os.environ.get("TABLE_NAME", "FaceMetadata")
+SIMILARITY_THRESHOLD = float(os.environ.get("SIMILARITY_THRESHOLD", "90"))
+
+table = dynamodb.Table(TABLE_NAME)
+
+
+def process_record(bucket, key):
+    try:
+        response = rekognition.search_faces_by_image(
+            CollectionId=COLLECTION_ID,
+            Image={"S3Object": {"Bucket": bucket, "Name": key}},
+            FaceMatchThreshold=SIMILARITY_THRESHOLD,
+            MaxFaces=1,
+        )
+    except rekognition.exceptions.InvalidParameterException:
+        print(f"No face detected in '{key}', skipping.")
+        return
+    except Exception as e:
+        print(f"Error processing '{key}': {e}")
+        return
+
+    matches = response.get("FaceMatches", [])
+
+    if matches:
+        best_match = matches[0]
+        matched_external_id = best_match["Face"].get("ExternalImageId", "unknown")
+        similarity = round(best_match["Similarity"], 2)
+
+        item = {
+            "ImageID": key,
+            "Timestamp": datetime.datetime.utcnow().isoformat(),
+            "MatchedWith": matched_external_id,
+            "Similarity": str(similarity),
+        }
+        table.put_item(Item=item)
+        print(f"MATCH: '{key}' matched '{matched_external_id}' "
+              f"({similarity}%). Metadata stored in DynamoDB.")
+    else:
+        print(f"NO MATCH for '{key}'.")
+
+
+def lambda_handler(event, context):
+    for record in event.get("Records", []):
+        bucket = record["s3"]["bucket"]["name"]
+        key = urllib.parse.unquote_plus(record["s3"]["object"]["key"])
+        process_record(bucket, key)
+
+    return {"statusCode": 200}
