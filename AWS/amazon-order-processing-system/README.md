@@ -8,7 +8,6 @@ The project follows an event-driven architecture and showcases how multiple AWS 
 
 ---
 
-## Architecture
 
 ## Architecture
 
@@ -37,7 +36,7 @@ The project follows an event-driven architecture and showcases how multiple AWS 
       Status: CONFIRMED
 ```
 
----
+
 
 ## AWS Services Used
 
