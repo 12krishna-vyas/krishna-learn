@@ -10,27 +10,32 @@ The project follows an event-driven architecture and showcases how multiple AWS 
 
 ## Architecture
 
-Customer
-        │
-        ▼
-API Gateway
-        │
-        ▼
-CreateOrder Lambda
-        │
-        ├────────────► DynamoDB (Store Order)
-        │
-        └────────────► Amazon SQS
-                           │
-                           ▼
-                 OrderProcessor Lambda
-                           │
-                           ├────────────► DynamoDB (Update Status)
-                           │
-                           └────────────► Amazon SNS
-                                          │
-                                          ▼
-                                   Email Notification
+## Architecture
+
+```text
+                Customer
+                    │
+                    ▼
+              API Gateway
+                    │
+                    ▼
+        CreateOrder Lambda
+            │               │
+            │               ▼
+            │         Amazon SQS
+            │               │
+            ▼               ▼
+      Amazon DynamoDB   OrderProcessor Lambda
+      (Store Order)          │
+                              │
+               ┌──────────────┴──────────────┐
+               ▼                             ▼
+      Amazon DynamoDB                 Amazon SNS
+     (Update Status)             (Email Notification)
+               │
+               ▼
+      Status: CONFIRMED
+```
 
 ---
 
